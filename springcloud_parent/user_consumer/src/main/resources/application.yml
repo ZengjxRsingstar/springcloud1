@@ -1,0 +1,40 @@
+server:
+  port: 18084
+spring:
+  application:
+    name: user-consumer   #服务名字
+#指定eureka服务地址
+eureka:
+  client:
+    service-url:
+      # EurekaServer的地址
+      defaultZone: http://localhost:7001/eureka
+# 修改服务地址轮询策略，默认是轮询，配置之后变随机user-provider 对应生产者
+user-provider:
+  ribbon:
+    #轮询
+    #NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RoundRobinRule
+    #随机算法
+    NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
+    #重试算法,该算法先按照轮询的策略获取服务,如果获取服务失败则在指定的时间内会进行重试，获取可用的服务
+    #NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RetryRule
+    #加权法,会根据平均响应时间计算所有服务的权重，响应时间越快服务权重越大被选中的概率越大。刚启动时如果同统计信息不足，则使用轮询的策略，等统计信息足够会切换到自身规则。
+    #NFLoadBalancerRuleClassName: com.netflix.loadbalancer.ZoneAvoidanceRule
+# 配置熔断策略：
+hystrix:
+  command:
+    default:
+      circuitBreaker:
+        # 强制打开熔断器 默认false关闭的。测试配置是否生效，打开后，所有请求都被拒绝
+        forceOpen: false
+        # 熔断触发最小请求次数，默认值是20，允许同时请求的线程数
+        requestVolumeThreshold: 10
+        # 触发熔断错误比例阈值，默认值50%，如果上面是10，经过些参数后就是5
+        errorThresholdPercentage: 50
+        # 熔断后休眠时长，默认值5秒
+        sleepWindowInMilliseconds: 10000
+      execution:
+        isolation:
+          thread:
+            # 熔断超时设置，默认为1秒
+            timeoutInMilliseconds: 1000
